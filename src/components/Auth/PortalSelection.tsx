@@ -61,6 +61,9 @@ const PortalSelection: React.FC<PortalSelectionProps> = ({ onSelectPortal }) => 
                 Access Patient Portal
                 <ArrowRight className="ml-2 h-4 w-4" />
               </button>
+              <p className="text-center text-sm text-gray-500 mt-3">
+                New patient? You can create an account after selecting this portal.
+              </p>
             </div>
           </div>
 
@@ -102,6 +105,9 @@ const PortalSelection: React.FC<PortalSelectionProps> = ({ onSelectPortal }) => 
                 Access Doctor Portal
                 <ArrowRight className="ml-2 h-4 w-4" />
               </button>
+              <p className="text-center text-sm text-gray-500 mt-3">
+                New doctor? You can create an account after selecting this portal.
+              </p>
             </div>
           </div>
         </div>

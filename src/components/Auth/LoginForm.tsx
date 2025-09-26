@@ -5,9 +5,10 @@ import { useAuth } from '../../contexts/AuthContext';
 interface LoginFormProps {
   role: 'patient' | 'doctor';
   onBack: () => void;
+  onSwitchToRegister: () => void;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ role, onBack }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ role, onBack, onSwitchToRegister }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -127,6 +128,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ role, onBack }) => {
               className="text-sm text-blue-600 hover:text-blue-500 underline"
             >
               Fill demo credentials
+            </button>
+            <span className="mx-2 text-gray-400">•</span>
+            <button
+              type="button"
+              onClick={onSwitchToRegister}
+              className="text-sm text-blue-600 hover:text-blue-500 underline"
+            >
+              Create new account
             </button>
           </div>
         </form>
