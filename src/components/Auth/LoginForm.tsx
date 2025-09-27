@@ -20,13 +20,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ role, onBack, onSwitchToRegister 
     setError('');
     setIsLoading(true);
 
-    const success = await login(email, password, role);
-    
-    if (!success) {
-      setError('Invalid credentials. Please try again.');
+    try {
+      await login(role);
+    } catch (error) {
+      setError('Authentication failed. Please try again.');
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   // Demo credentials helper
