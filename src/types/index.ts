@@ -1,8 +1,10 @@
+// src/types/index.ts
+
 export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'patient' | 'doctor';
+  role: 'Patient' | 'Doctor';
   dateOfBirth?: string;
   insurance?: string;
   specialization?: string;
@@ -13,7 +15,7 @@ export interface Message {
   senderId: string;
   receiverId: string;
   content: string;
-  timestamp: Date;
+  timestamp: Date | string; // Allow both Date and string for API responses
   patientDetails?: {
     name: string;
     dateOfBirth: string;
@@ -38,4 +40,20 @@ export interface MessageThread {
   lastMessage: Date;
   category: string;
   unreadCount: number;
+}
+
+// Add any additional types you might need for API responses
+export interface AuthResponse {
+  user: User;
+  token?: string;
+}
+
+export interface RegisterData {
+  name: string;
+  email: string;
+  password: string;
+  role: 'Patient' | 'Doctor';
+  dateOfBirth?: string;
+  insurance?: string;
+  specialization?: string;
 }

@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { User } from '../types';
 
+
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string, role: 'patient' | 'doctor') => Promise<boolean>;
+  login: (email: string, password: string, role: 'Patient' | 'Doctor') => Promise<boolean>;
   register: (userData: RegisterData) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   isAuthenticated: boolean;
@@ -13,7 +14,7 @@ interface RegisterData {
   name: string;
   email: string;
   password: string;
-  role: 'patient' | 'doctor';
+  role: 'Patient' | 'Doctor';
   dateOfBirth?: string;
   insurance?: string;
   specialization?: string;
@@ -35,14 +36,14 @@ const mockUsers: User[] = [
     id: '1',
     name: 'Dr. Sarah Johnson',
     email: 'sarah.johnson@medicalcenter.com',
-    role: 'doctor',
+    role: 'Doctor',
     specialization: 'General Practice'
   },
   {
     id: '2',
     name: 'John Smith',
     email: 'john.smith@email.com',
-    role: 'patient',
+    role: 'Patient',
     dateOfBirth: '1985-06-15',
     insurance: 'Blue Cross Blue Shield'
   },
@@ -50,7 +51,7 @@ const mockUsers: User[] = [
     id: '3',
     name: 'Emily Davis',
     email: 'emily.davis@email.com',
-    role: 'patient',
+    role: 'Patient',
     dateOfBirth: '1992-03-22',
     insurance: 'Aetna'
   }
@@ -60,7 +61,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>(mockUsers);
 
-  const login = async (email: string, password: string, role: 'patient' | 'doctor'): Promise<boolean> => {
+  const login = async (email: string, password: string, role: 'Patient' | 'Doctor'): Promise<boolean> => {
     // Mock authentication - in real app, this would be an API call
     const foundUser = users.find(u => u.email === email && u.role === role);
     if (foundUser) {
