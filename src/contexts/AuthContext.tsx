@@ -5,7 +5,7 @@ import { useAuth0Integration } from '../hooks/useAuth0Integration';
 
 interface AuthContextType {
   user: User | null;
-  login: (role: 'patient' | 'doctor') => Promise<void>;
+  login: (role: 'Patient' | 'Doctor') => Promise<void>;
   register: (userData: RegisterData) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   isAuthenticated: boolean;
