@@ -30,48 +30,6 @@ export const useMessages = () => {
   return context;
 };
 
-// Mock data
-const initialMessages: Message[] = [
-  {
-    id: '1',
-    senderId: '2',
-    receiverId: '1',
-    content: 'I\'ve been experiencing persistent headaches for the past week. They seem to be getting worse, especially in the morning.',
-    timestamp: new Date('2024-01-15T10:30:00'),
-    patientDetails: {
-      name: 'John Smith',
-      dateOfBirth: '1985-06-15',
-      insurance: 'Blue Cross Blue Shield',
-      urgency: 'medium'
-    },
-    category: 'general',
-    read: false
-  },
-  {
-    id: '2',
-    senderId: '1',
-    receiverId: '2',
-    content: 'Thank you for reaching out. Headaches can have various causes. Have you been under any unusual stress lately? Are you staying hydrated?',
-    timestamp: new Date('2024-01-15T14:20:00'),
-    read: true
-  },
-  {
-    id: '3',
-    senderId: '3',
-    receiverId: '1',
-    content: 'I need a referral to see an orthodontist for my daughter. She\'s 12 years old and we think she needs braces.',
-    timestamp: new Date('2024-01-16T09:15:00'),
-    patientDetails: {
-      name: 'Emily Davis',
-      dateOfBirth: '1992-03-22',
-      insurance: 'Aetna',
-      urgency: 'low'
-    },
-    category: 'referrals',
-    read: false
-  }
-];
-
 const initialCategories: Category[] = [
   { id: '1', name: 'General', color: '#3B82F6', doctorId: '1' },
   { id: '2', name: 'Referrals', color: '#10B981', doctorId: '1' },
