@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, X, Tag } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { useMessages } from '../../contexts/MessageContext';
 import { useAuth } from '../../contexts/AuthContext';
 
