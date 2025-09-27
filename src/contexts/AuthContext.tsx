@@ -2,6 +2,7 @@ import React, { createContext, useContext, ReactNode } from 'react';
 import { User } from '../types';
 import { useAuth0Integration } from '../hooks/useAuth0Integration';
 
+
 interface AuthContextType {
   user: User | null;
   login: (role: 'patient' | 'doctor') => Promise<void>;
@@ -15,7 +16,7 @@ interface RegisterData {
   name: string;
   email: string;
   password: string;
-  role: 'patient' | 'doctor';
+  role: 'Patient' | 'Doctor';
   dateOfBirth?: string;
   insurance?: string;
   specialization?: string;
@@ -33,6 +34,7 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user, isAuthenticated, isLoading, login, logout } = useAuth0Integration();
+
 
   // Keep register functionality for backward compatibility
   // In a real app, you might want to handle registration through Auth0's Management API
