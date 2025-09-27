@@ -1,6 +1,14 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Message, Category, MessageThread } from '../types';
 
+function toDate(d: Date | string): Date {
+  return d instanceof Date ? d : new Date(d);
+}
+
+function toStringDate(d: Date | string): string {
+  return d instanceof Date ? d.toISOString() : d;
+}
+
 interface MessageContextType {
   messages: Message[];
   categories: Category[];
@@ -119,7 +127,8 @@ export const MessageProvider: React.FC<{ children: ReactNode }> = ({ children })
           patientId,
           patientName: msg.patientDetails?.name || 'Unknown Patient',
           messages: [],
-          lastMessage: msg.timestamp,
+          
+          lastMessage: toDate(msg.timestamp),
           category: msg.category || 'general',
           unreadCount: 0
         };
@@ -127,7 +136,7 @@ export const MessageProvider: React.FC<{ children: ReactNode }> = ({ children })
       
       threads[patientId].messages.push(msg);
       if (msg.timestamp > threads[patientId].lastMessage) {
-        threads[patientId].lastMessage = msg.timestamp;
+        threads[patientId].lastMessage = toDate(msg.timestamp);
       }
       if (!msg.read && msg.senderId !== doctorId) {
         threads[patientId].unreadCount++;
@@ -142,7 +151,7 @@ export const MessageProvider: React.FC<{ children: ReactNode }> = ({ children })
   const getMessagesForPatient = (patientId: string): Message[] => {
     return messages.filter(msg => 
       msg.senderId === patientId || msg.receiverId === patientId
-    ).sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    ).sort((a, b) => toDate(a.timestamp).getTime() - toDate(b.timestamp).getTime());
   };
 
   return (
