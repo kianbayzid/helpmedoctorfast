@@ -1,23 +1,23 @@
 import { apiClient } from './api';
-import { Message, CreateMessageRequest, UpdateMessageRequest, MessageStats } from '../types';
+import { ApiMessage, CreateMessageRequest, UpdateMessageRequest, MessageStats } from '../types';
 
 class MessageService {
   private readonly basePath = '/messages';
 
-  async create(data: CreateMessageRequest): Promise<Message> {
-    return await apiClient.post<Message>(this.basePath, data);
+  async create(data: CreateMessageRequest): Promise<ApiMessage> {
+    return await apiClient.post<ApiMessage>(this.basePath, data);
   }
 
-  async findAll(): Promise<Message[]> {
-    return await apiClient.get<Message[]>(this.basePath);
+  async findAll(): Promise<ApiMessage[]> {
+    return await apiClient.get<ApiMessage[]>(this.basePath);
   }
 
-  async findOne(idMessage: number): Promise<Message> {
-    return await apiClient.get<Message>(`${this.basePath}/${idMessage}`);
+  async findOne(idMessage: number): Promise<ApiMessage> {
+    return await apiClient.get<ApiMessage>(`${this.basePath}/${idMessage}`);
   }
 
-  async update(idMessage: number, changes: UpdateMessageRequest): Promise<Message> {
-    return await apiClient.put<Message>(`${this.basePath}/${idMessage}`, changes);
+  async update(idMessage: number, changes: UpdateMessageRequest): Promise<ApiMessage> {
+    return await apiClient.put<ApiMessage>(`${this.basePath}/${idMessage}`, changes);
   }
 
   async delete(idMessage: number): Promise<{ idMessage: number }> {
@@ -25,26 +25,26 @@ class MessageService {
   }
 
   // Doctor-specific messages
-  async findByDoctor(idDoctor: number): Promise<Message[]> {
-    return await apiClient.get<Message[]>(`${this.basePath}/doctor/${idDoctor}`);
+  async findByDoctor(idDoctor: number): Promise<ApiMessage[]> {
+    return await apiClient.get<ApiMessage[]>(`${this.basePath}/doctor/${idDoctor}`);
   }
 
   // Patient-specific messages
-  async findByPatient(idPatient: number): Promise<Message[]> {
-    return await apiClient.get<Message[]>(`${this.basePath}/patient/${idPatient}`);
+  async findByPatient(idPatient: number): Promise<ApiMessage[]> {
+    return await apiClient.get<ApiMessage[]>(`${this.basePath}/patient/${idPatient}`);
   }
 
   // TLDR operations
-  async regenerateTLDR(idMessage: number): Promise<Message> {
-    return await apiClient.post<Message>(`${this.basePath}/${idMessage}/regenerate-tldr`);
+  async regenerateTLDR(idMessage: number): Promise<ApiMessage> {
+    return await apiClient.post<ApiMessage>(`${this.basePath}/${idMessage}/regenerate-tldr`);
   }
 
   // Status operations
-  async markAsRead(idMessage: number): Promise<Message> {
+  async markAsRead(idMessage: number): Promise<ApiMessage> {
     return await this.update(idMessage, { status: 'read' });
   }
 
-  async markAsResponded(idMessage: number): Promise<Message> {
+  async markAsResponded(idMessage: number): Promise<ApiMessage> {
     return await this.update(idMessage, { status: 'responded' });
   }
 
@@ -54,19 +54,19 @@ class MessageService {
   }
 
   // Filtering and sorting
-  async findByStatus(status: 'unread' | 'read' | 'responded'): Promise<Message[]> {
-    return await apiClient.get<Message[]>(`${this.basePath}`, { status });
+  async findByStatus(status: 'unread' | 'read' | 'responded'): Promise<ApiMessage[]> {
+    return await apiClient.get<ApiMessage[]>(`${this.basePath}`, { status });
   }
 
-  async findByPriority(priority: 'low' | 'normal' | 'high' | 'urgent'): Promise<Message[]> {
-    return await apiClient.get<Message[]>(`${this.basePath}`, { priority });
+  async findByPriority(priority: 'low' | 'normal' | 'high' | 'urgent'): Promise<ApiMessage[]> {
+    return await apiClient.get<ApiMessage[]>(`${this.basePath}`, { priority });
   }
 
-  async findUrgentMessages(): Promise<Message[]> {
+  async findUrgentMessages(): Promise<ApiMessage[]> {
     return await this.findByPriority('urgent');
   }
 
-  async findUnreadMessages(): Promise<Message[]> {
+  async findUnreadMessages(): Promise<ApiMessage[]> {
     return await this.findByStatus('unread');
   }
 
@@ -80,9 +80,9 @@ class MessageService {
   }
 
   // Real-time updates helper
-  async pollForNewMessages(lastMessageId?: number): Promise<Message[]> {
+  async pollForNewMessages(lastMessageId?: number): Promise<ApiMessage[]> {
     const params = lastMessageId ? { since: lastMessageId } : {};
-    return await apiClient.get<Message[]>(`${this.basePath}/new`, params);
+    return await apiClient.get<ApiMessage[]>(`${this.basePath}/new`, params);
   }
 }
 
