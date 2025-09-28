@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Clock, User, AlertCircle } from 'lucide-react';
+import { Send, Clock, User, AlertCircle, FileText } from 'lucide-react';
 import { useMessages } from '../../contexts/MessageContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { Message } from '../../types';
+
 
 interface MessageThreadProps {
   patientId: string;
@@ -12,13 +13,20 @@ interface MessageThreadProps {
 const MessageThread: React.FC<MessageThreadProps> = ({ patientId, patientName }) => {
   const { getMessagesForPatient, sendMessage, markAsRead } = useMessages();
   const { user } = useAuth();
+
+
+
   const [newMessage, setNewMessage] = useState('');
+  const [loadingTldr, setLoadingTldr] = useState<string | null>(null);
+  const [tldrResults, setTldrResults] = useState<{ [messageId: string]: string }>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
 
   const messages = getMessagesForPatient(patientId);
-
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
   };
 
   useEffect(() => {
@@ -29,6 +37,8 @@ const MessageThread: React.FC<MessageThreadProps> = ({ patientId, patientName })
         markAsRead(msg.id);
       }
     });
+
+    return () => clearTimeout(timer);
   }, [messages, patientId, markAsRead]);
 
   const handleSendMessage = () => {
@@ -42,6 +52,37 @@ const MessageThread: React.FC<MessageThreadProps> = ({ patientId, patientName })
       setNewMessage('');
     }
   };
+
+  const handleTldr = async (messageId: string, messageContent: string) => {
+    setLoadingTldr(messageId);
+    
+    try {
+      // TODO: Replace with actual API call to your backend
+      // const response = await fetch('/api/tldr', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ messageId, content: messageContent })
+      // });
+      // const data = await response.json();
+      
+      // Mock TLDR - shows blank bubble for backend integration
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API delay
+      
+      setTldrResults(prev => ({
+        ...prev,
+        [messageId]: '' // Empty string for blank bubble
+      }));
+    } catch (error) {
+      console.error('Error generating TLDR:', error);
+      setTldrResults(prev => ({
+        ...prev,
+        [messageId]: 'Error generating summary. Please try again.'
+      }));
+    } finally {
+      setLoadingTldr(null);
+    }
+  };
+
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -109,7 +150,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({ patientId, patientName })
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ scrollBehavior: 'smooth' }}>
         {messages.map((message, index) => {
           const isDoctor = message.senderId === user?.id;
           const showPatientInfo = !isDoctor && message.patientDetails && 
@@ -120,24 +161,48 @@ const MessageThread: React.FC<MessageThreadProps> = ({ patientId, patientName })
               {showPatientInfo && getPatientInfo(message)}
               
               <div className={`flex ${isDoctor ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                <div className={`max-w-xs lg:max-w-md ${
                   isDoctor 
                     ? 'bg-blue-600 text-white' 
                     : 'bg-gray-100 text-gray-900'
-                }`}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium">
-                      {isDoctor ? 'You' : patientName}
-                    </span>
-                    {!isDoctor && getUrgencyBadge(message)}
+                } rounded-lg overflow-hidden`}>
+                  <div className="px-4 py-2">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium">
+                        {isDoctor ? 'You' : patientName}
+                      </span>
+                      {!isDoctor && getUrgencyBadge(message)}
+                    </div>
+                    <p className="text-sm">{message.content}</p>
+                    <div className={`flex items-center justify-end mt-2 text-xs ${
+                      isDoctor ? 'text-blue-100' : 'text-gray-500'
+                    }`}>
+                      <Clock className="h-3 w-3 mr-1" />
+                      {formatTime(message.timestamp)}
+                    </div>
                   </div>
-                  <p className="text-sm">{message.content}</p>
-                  <div className={`flex items-center justify-end mt-2 text-xs ${
-                    isDoctor ? 'text-blue-100' : 'text-gray-500'
-                  }`}>
-                    <Clock className="h-3 w-3 mr-1" />
-                    {formatTime(message.timestamp)}
-                  </div>
+                  
+                  {/* TLDR Button - only show for patient messages */}
+                  {!isDoctor && (
+                    <div className="px-4 pb-2">
+                      <button
+                        onClick={() => handleTldr(message.id, message.content)}
+                        disabled={loadingTldr === message.id}
+                        className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white text-xs font-medium py-1 px-2 rounded transition-colors duration-200 flex items-center justify-center"
+                      >
+                        <FileText className="h-3 w-3 mr-1" />
+                        {loadingTldr === message.id ? 'Generating...' : 'TLDR'}
+                      </button>
+                      
+                      {/* TLDR Result */}
+                      {tldrResults[message.id] && (
+                        <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-800">
+                          <div className="font-medium mb-1">Summary:</div>
+                          {tldrResults[message.id]}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -169,5 +234,4 @@ const MessageThread: React.FC<MessageThreadProps> = ({ patientId, patientName })
     </div>
   );
 };
-
 export default MessageThread;
