@@ -62,9 +62,54 @@ export const useAuth0Integration = () => {
       console.warn('Backend API not available, using Auth0 data directly:', error);
 
       // If backend is not available, use Auth0 data directly
-      const roleFromState = sessionStorage.getItem('selectedRole');
+      const roleFromSession = sessionStorage.getItem('selectedRole');
+      const pendingRoleData = localStorage.getItem('pendingUserRole');
       const roleFromAuth0 = auth0User['https://helpmedoctorfast.com/role'] as 'Patient' | 'Doctor';
-      const selectedRole = roleFromAuth0 || roleFromState as 'Patient' | 'Doctor' || 'Patient';
+
+      let selectedRole: 'Patient' | 'Doctor' = 'Patient';
+
+      // Check for dual role first
+      const dualRoleData = localStorage.getItem('dualRoleData');
+      if (dualRoleData) {
+        try {
+          const parsedDualRole = JSON.parse(dualRoleData);
+          if (Date.now() - parsedDualRole.timestamp < 10 * 60 * 1000) {
+            // Use primary role for main dashboard routing, but store dual capability
+            selectedRole = parsedDualRole.primaryRole;
+            console.log('Using dual role - primary:', parsedDualRole.primaryRole, 'secondary:', parsedDualRole.secondaryRole);
+          }
+        } catch (e) {
+          console.warn('Failed to parse dual role data:', e);
+        }
+      }
+
+      // Try to get role from multiple sources if no dual role
+      if (!dualRoleData && pendingRoleData) {
+        try {
+          const parsedRoleData = JSON.parse(pendingRoleData);
+          // Check if this role data is for the current user (within last 10 minutes)
+          const isRecent = Date.now() - parsedRoleData.timestamp < 10 * 60 * 1000;
+          const isForCurrentUser = !parsedRoleData.userId || parsedRoleData.userId === 'pending' || parsedRoleData.userId === auth0User.sub;
+
+          if (isRecent && isForCurrentUser) {
+            selectedRole = parsedRoleData.role;
+            console.log('Using stored pending role for new user:', selectedRole);
+          }
+        } catch (e) {
+          console.warn('Failed to parse pending role data:', e);
+        }
+      } else if (!dualRoleData && roleFromAuth0) {
+        selectedRole = roleFromAuth0;
+      } else if (!dualRoleData && roleFromSession) {
+        selectedRole = roleFromSession as 'Patient' | 'Doctor';
+      }
+
+      console.log('Role selection logic:', {
+        roleFromAuth0,
+        roleFromSession,
+        hasPendingRoleData: !!pendingRoleData,
+        finalRole: selectedRole
+      });
 
       const fallbackUser: User = {
         id: auth0User.sub || '',
@@ -76,8 +121,10 @@ export const useAuth0Integration = () => {
         specialization: auth0User['https://helpmedoctorfast.com/specialization']
       };
 
-      // Clear the stored role after use
+      // Clear the stored role after successful use
       sessionStorage.removeItem('selectedRole');
+      localStorage.removeItem('pendingUserRole');
+
       return fallbackUser;
     } finally {
       setUserLoading(false);
@@ -187,7 +234,14 @@ export const useAuth0Integration = () => {
   }, [isAuthenticated, auth0User, isLoading, fetchUserProfile]);
 
   const login = async (role: 'Patient' | 'Doctor') => {
-    // Store the role selection temporarily
+    // Store the role selection with a timestamp for persistence
+    const roleData = {
+      role: role,
+      timestamp: Date.now(),
+      userId: auth0User?.sub || 'pending'
+    };
+
+    localStorage.setItem('pendingUserRole', JSON.stringify(roleData));
     sessionStorage.setItem('selectedRole', role);
 
     await loginWithRedirect({
@@ -196,8 +250,44 @@ export const useAuth0Integration = () => {
         role: role
       },
       authorizationParams: {
-        prompt: 'login',
-        state: JSON.stringify({ role })
+        // Use 'select_account' to allow both login and signup
+        prompt: 'select_account',
+        state: JSON.stringify({ role }),
+        // Add role as a login hint for new users
+        login_hint: `role:${role}`,
+        // Add custom parameter that can be accessed in Auth0 rules/actions
+        ui_locales: `role_${role.toLowerCase()}`
+      }
+    });
+  };
+
+  // New function specifically for signup
+  const signup = async (role: 'Patient' | 'Doctor') => {
+    // Store the role selection with persistence
+    const roleData = {
+      role: role,
+      timestamp: Date.now(),
+      userId: auth0User?.sub || 'pending',
+      isSignup: true
+    };
+
+    localStorage.setItem('pendingUserRole', JSON.stringify(roleData));
+    sessionStorage.setItem('selectedRole', role);
+
+    await loginWithRedirect({
+      appState: {
+        returnTo: window.location.origin,
+        role: role,
+        isSignup: true
+      },
+      authorizationParams: {
+        // Force the signup screen
+        prompt: 'signup',
+        state: JSON.stringify({ role, isSignup: true }),
+        login_hint: `role:${role}`,
+        ui_locales: `role_${role.toLowerCase()}`,
+        // Additional parameters for signup
+        screen_hint: 'signup'
       }
     });
   };
@@ -212,17 +302,57 @@ export const useAuth0Integration = () => {
     setError(null);
   };
 
+  // Helper function to check if user has specific role permission
+  const hasRolePermission = useCallback((requiredRole: 'Patient' | 'Doctor'): boolean => {
+    if (!user) return false;
+
+    // Check primary role
+    if (user.role === requiredRole) return true;
+
+    // Check for dual role permissions
+    const dualRoleData = localStorage.getItem('dualRoleData');
+    if (dualRoleData) {
+      try {
+        const parsedDualRole = JSON.parse(dualRoleData);
+        const isRecent = Date.now() - parsedDualRole.timestamp < 10 * 60 * 1000;
+
+        if (isRecent) {
+          return (
+            parsedDualRole.primaryRole === requiredRole ||
+            parsedDualRole.secondaryRole === requiredRole
+          );
+        }
+      } catch (e) {
+        console.warn('Failed to check dual role permissions:', e);
+      }
+    }
+
+    return false;
+  }, [user]);
+
+  // Debug the authentication state
+  console.log('useAuth0Integration - final state:', {
+    auth0IsAuthenticated: isAuthenticated,
+    auth0IsLoading: isLoading,
+    userIsLoading: userLoading,
+    hasUser: !!user,
+    finalIsAuthenticated: isAuthenticated && !isLoading,
+    finalIsLoading: isLoading || userLoading
+  });
+
   return {
     user,
-    isAuthenticated: isAuthenticated && !isLoading && user !== null,
+    isAuthenticated: isAuthenticated && !isLoading, // Remove user !== null requirement
     isLoading: isLoading || userLoading,
     error,
     login,
+    signup,
     logout,
     getAccessTokenSilently,
     updateUserProfile,
     syncUserWithBackend,
     makeAuthenticatedRequest,
-    refreshUserProfile: fetchUserProfile
+    refreshUserProfile: fetchUserProfile,
+    hasRolePermission
   };
 };

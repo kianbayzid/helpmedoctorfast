@@ -6,10 +6,12 @@ import { useAuth0Integration } from '../hooks/useAuth0Integration';
 interface AuthContextType {
   user: User | null;
   login: (role: 'Patient' | 'Doctor') => Promise<void>;
+  signup: (role: 'Patient' | 'Doctor') => Promise<void>;
   register: (userData: RegisterData) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
+  hasRolePermission: (role: 'Patient' | 'Doctor') => boolean;
 }
 
 interface RegisterData {
@@ -33,20 +35,18 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { user, isAuthenticated, isLoading, login, logout } = useAuth0Integration();
-
+  const { user, isAuthenticated, isLoading, login, signup, logout, hasRolePermission } = useAuth0Integration();
 
   // Keep register functionality for backward compatibility
   // In a real app, you might want to handle registration through Auth0's Management API
   const register = async (userData: RegisterData): Promise<{ success: boolean; error?: string }> => {
-    // For now, redirect to Auth0 signup
-    // You can customize this to use Auth0's Management API for user creation
-    await login(userData.role);
+    // For new user registration, use the signup function with proper role attachment
+    await signup(userData.role);
     return { success: true };
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isAuthenticated, isLoading }}>
+    <AuthContext.Provider value={{ user, login, signup, register, logout, isAuthenticated, isLoading, hasRolePermission }}>
       {children}
     </AuthContext.Provider>
   );
