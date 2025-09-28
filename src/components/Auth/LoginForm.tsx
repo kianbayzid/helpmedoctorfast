@@ -3,12 +3,13 @@ import { User, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface LoginFormProps {
-  role: 'patient' | 'doctor';
+  isPatient: boolean;
+  isDoctor: boolean;
   onBack: () => void;
   onSwitchToRegister: () => void;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ role, onBack, onSwitchToRegister }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ isPatient, isDoctor, onBack, onSwitchToRegister }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -21,7 +22,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ role, onBack, onSwitchToRegister 
     setIsLoading(true);
 
     try {
-      await login(role);
+      await login(isDoctor ? 'Doctor' : 'Patient');
     } catch (error) {
       setError('Authentication failed. Please try again.');
       setIsLoading(false);
@@ -30,10 +31,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ role, onBack, onSwitchToRegister 
 
   // Demo credentials helper
   const fillDemoCredentials = () => {
-    if (role === 'doctor') {
+    if (isDoctor) {
       setEmail('sarah.johnson@medicalcenter.com');
       setPassword('demo123');
-    } else {
+    } else if (isPatient){
       setEmail('john.smith@email.com');
       setPassword('demo123');
     }
@@ -52,7 +53,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ role, onBack, onSwitchToRegister 
           
           <div className="text-center">
             <h2 className="text-3xl font-bold text-gray-900">
-              {role === 'doctor' ? 'Doctor' : 'Patient'} Login
+              {isDoctor ? 'Doctor' : 'Patient'} Login
             </h2>
             <p className="mt-2 text-gray-600">
               Access your secure portal
