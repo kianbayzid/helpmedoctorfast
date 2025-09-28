@@ -1,37 +1,32 @@
-import { apiClient } from './api';
-import { Doctor, CreateDoctorRequest, UpdateDoctorRequest } from '../types';
+// src/services/doctorService.ts
+import { httpClient } from './httpClient';
 
-class DoctorService {
-  private readonly basePath = '/doctors';
+export const doctorService = {
+  async create(data: { name: string; email: string; password: string; phone: string; specialization?: string }) {
+    const response = await httpClient.post('/auth/register', data);
+    // backend devuelve { doctor: {...} }
+    return response.doctor;
+  },
 
-  async create(data: CreateDoctorRequest): Promise<Doctor> {
-    return await apiClient.post<Doctor>(this.basePath, data);
-  }
+  async login(data: { email: string; password: string }) {
+    const response = await httpClient.post('/auth/login', data);
+    // backend devuelve { doctor: {...} }
+    return response.doctor;
+  },
 
-  async findAll(): Promise<Doctor[]> {
-    return await apiClient.get<Doctor[]>(this.basePath);
-  }
+  async getAll() {
+    return httpClient.get('/doctors');
+  },
 
-  async findOne(id: number): Promise<Doctor> {
-    return await apiClient.get<Doctor>(`${this.basePath}/${id}`);
-  }
+  async getById(id: number) {
+    return httpClient.get(`/doctors/${id}`);
+  },
 
-  async update(id: number, changes: UpdateDoctorRequest): Promise<Doctor> {
-    return await apiClient.put<Doctor>(`${this.basePath}/${id}`, changes);
-  }
+  async update(id: number, data: any) {
+    return httpClient.patch(`/doctors/${id}`, data);
+  },
 
-  async delete(id: number): Promise<{ id: number }> {
-    return await apiClient.delete<{ id: number }>(`${this.basePath}/${id}`);
-  }
-
-  // Additional utility methods
-  async findBySpecialty(specialty: string): Promise<Doctor[]> {
-    return await apiClient.get<Doctor[]>(`${this.basePath}`, { specialty });
-  }
-
-  async search(query: string): Promise<Doctor[]> {
-    return await apiClient.get<Doctor[]>(`${this.basePath}/search`, { q: query });
-  }
-}
-
-export const doctorService = new DoctorService();
+  async remove(id: number) {
+    return httpClient.delete(`/doctors/${id}`);
+  },
+};
