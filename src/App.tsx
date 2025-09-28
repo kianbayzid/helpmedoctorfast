@@ -88,13 +88,13 @@ const PatientProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
   const { isAuthenticated, isLoading, hasRolePermission, user } = useAuth();
   const { isLoading: auth0Loading } = useAuth0();
 
-  console.log('PatientProtectedRoute: State check', {
-    isLoading,
-    auth0Loading,
-    isAuthenticated,
-    hasUser: !!user,
-    userRole: user?.role
-  });
+  //console.log('PatientProtectedRoute: State check', {
+  //  isLoading,
+  //  auth0Loading,
+  //  isAuthenticated,
+  //  hasUser: !!user,
+  //  userRole: user?.role
+  //});
 
   if (isLoading || auth0Loading) {
     console.log('PatientProtectedRoute: Still loading...');
