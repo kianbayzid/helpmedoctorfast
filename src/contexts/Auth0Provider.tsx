@@ -27,6 +27,19 @@ const Auth0ProviderWithHistory: React.FC<Auth0ProviderWithHistoryProps> = ({ chi
       onRedirectCallback={(appState) => {
         // Handle the redirect callback and any errors
         console.log('Auth0 redirect callback:', appState);
+
+        // After successful auth, redirect to appropriate dashboard
+        if (appState?.role) {
+          console.log('Redirecting new user to dashboard for role:', appState.role);
+          if (appState.role === 'Doctor') {
+            window.history.replaceState({}, '', '/doctor');
+          } else if (appState.role === 'Patient') {
+            window.history.replaceState({}, '', '/patient');
+          }
+        } else {
+          // Default redirect to root which will show appropriate dashboard
+          window.history.replaceState({}, '', '/');
+        }
       }}
     >
       {children}

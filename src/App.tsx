@@ -143,17 +143,32 @@ const PatientProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
 };
 
 const Dashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+
+  // Show loading while user data is being fetched
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (user?.role === 'Patient') {
+    console.log('Dashboard: Showing PatientDashboard for user:', user.role);
     return <PatientDashboard />;
   }
 
   if (user?.role === 'Doctor') {
+    console.log('Dashboard: Showing DoctorDashboard for user:', user.role);
     return <DoctorDashboard />;
   }
 
   // If user doesn't have a role, redirect to login to set one
+  console.log('Dashboard: No role found, redirecting to login. User:', user);
   return <Navigate to="/login" replace />;
 };
 
