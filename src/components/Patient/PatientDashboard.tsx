@@ -41,8 +41,9 @@ const PatientDashboard: React.FC = () => {
     }
   };
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString() + ' at ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  const formatDate = (dateLike: Date | string) => {
+  const d = dateLike instanceof Date ? dateLike : new Date(dateLike);
+  return d.toLocaleDateString() + ' at ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (

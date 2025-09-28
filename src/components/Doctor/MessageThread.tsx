@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Clock, User, AlertCircle } from 'lucide-react';
 import { useMessages } from '../../contexts/MessageContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { Message } from '../../types';
+import { UiMessage } from '../../types';
 
 interface MessageThreadProps {
   patientId: string;
@@ -43,11 +43,12 @@ const MessageThread: React.FC<MessageThreadProps> = ({ patientId, patientName })
     }
   };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const formatTime = (dateLike: Date | string) => {
+  const d = dateLike instanceof Date ? dateLike : new Date(dateLike);
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  const getUrgencyBadge = (message: Message) => {
+  const getUrgencyBadge = (message: UiMessage) => {
     if (!message.patientDetails?.urgency) return null;
     
     const urgency = message.patientDetails.urgency;
@@ -65,7 +66,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({ patientId, patientName })
     );
   };
 
-  const getPatientInfo = (message: Message) => {
+  const getPatientInfo = (message: UiMessage) => {
     if (!message.patientDetails) return null;
 
     return (
