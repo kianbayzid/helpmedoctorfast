@@ -6,10 +6,10 @@ import { useAuth } from '../contexts/AuthContext';
 const LoginPage: React.FC = () => {
   const { isLoading: auth0Loading } = useAuth0();
   const { login, signup } = useAuth();
-  const [selectedRole, setSelectedRole] = useState<'Patient' | 'Doctor' | null>(null);
+  const [selectedRole, setSelectedRole] = useState<'Doctor' | null>(null);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
 
-  const handleAuth = async (role: 'Patient' | 'Doctor', mode: 'login' | 'signup') => {
+  const handleAuth = async (role: 'Doctor', mode: 'login' | 'signup') => {
     if (mode === 'signup') {
       await signup(role);
     } else {
@@ -36,14 +36,10 @@ const LoginPage: React.FC = () => {
 
             <div className="text-center">
               <div className="mx-auto h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                {selectedRole === 'Doctor' ? (
-                  <Stethoscope className="h-8 w-8 text-blue-600" />
-                ) : (
-                  <Heart className="h-8 w-8 text-blue-600" />
-                )}
+                <Stethoscope className="h-8 w-8 text-blue-600" />
               </div>
               <h2 className="text-3xl font-bold text-gray-900">
-                {selectedRole === 'Doctor' ? 'Doctor' : 'Patient'} {authMode === 'signup' ? 'Sign Up' : 'Login'}
+                Doctor {authMode === 'signup' ? 'Sign Up' : 'Login'}
               </h2>
               <p className="mt-2 text-gray-600">
                 Secure authentication powered by Auth0
@@ -131,31 +127,12 @@ const LoginPage: React.FC = () => {
             HelpMeDoctorFast
           </h1>
           <p className="text-xl text-gray-600 mb-8">
-            Choose your portal to get started
+            Doctor Portal Access
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Patient Portal */}
-          <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow duration-300">
-            <div className="text-center">
-              <div className="mx-auto h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <Heart className="h-8 w-8 text-green-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Patient Portal</h3>
-              <p className="text-gray-600 mb-6">
-                Access your medical information, communicate with doctors, and manage your healthcare.
-              </p>
-              <button
-                onClick={() => setSelectedRole('Patient')}
-                className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium"
-              >
-                Continue as Patient
-              </button>
-            </div>
-          </div>
-
-          {/* Doctor Portal */}
+        <div className="max-w-md mx-auto">
+          {/* Doctor Portal - Centered */}
           <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow duration-300">
             <div className="text-center">
               <div className="mx-auto h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">

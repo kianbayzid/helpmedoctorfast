@@ -5,7 +5,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { MessageProvider } from './contexts/MessageContext';
 import LoginPage from './pages/LoginPage';
 import NoRolePage from './pages/NoRolePage';
-import PatientDashboard from './components/Patient/PatientDashboard';
+//import PatientDashboard from './components/Patient/PatientDashboard';
 import DoctorDashboard from './components/Doctor/DoctorDashboard';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -84,20 +84,12 @@ const DoctorProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childre
   return <>{children}</>;
 };
 
+/*
 const PatientProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading, hasRolePermission, user } = useAuth();
   const { isLoading: auth0Loading } = useAuth0();
 
-  //console.log('PatientProtectedRoute: State check', {
-  //  isLoading,
-  //  auth0Loading,
-  //  isAuthenticated,
-  //  hasUser: !!user,
-  //  userRole: user?.role
-  //});
-
   if (isLoading || auth0Loading) {
-    console.log('PatientProtectedRoute: Still loading...');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
@@ -109,13 +101,10 @@ const PatientProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
   }
 
   if (!isAuthenticated) {
-    console.log('PatientProtectedRoute: Not authenticated, redirecting to login');
     return <Navigate to="/login" replace />;
   }
 
-  // Wait for user data to load
   if (!user) {
-    console.log('PatientProtectedRoute: No user data yet, showing loading...');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
@@ -127,21 +116,14 @@ const PatientProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
   }
 
   const hasPatientPermission = hasRolePermission('Patient');
-  console.log('PatientProtectedRoute: Permission check', {
-    userRole: user?.role,
-    hasPatientPermission,
-    user: user
-  });
 
   if (!hasPatientPermission) {
-    console.log('PatientProtectedRoute: No patient permission, redirecting to login');
     return <Navigate to="/login" replace />;
   }
 
-  console.log('PatientProtectedRoute: Access granted, showing PatientDashboard');
   return <>{children}</>;
 };
-
+*/
 const Dashboard: React.FC = () => {
   const { user, isLoading } = useAuth();
 
@@ -157,18 +139,21 @@ const Dashboard: React.FC = () => {
     );
   }
 
+  /*
   if (user?.role === 'Patient') {
     console.log('Dashboard: Showing PatientDashboard for user:', user.role);
     return <PatientDashboard />;
   }
+  */
 
+  // Always show DoctorDashboard now (Patient portal removed)
   if (user?.role === 'Doctor') {
     console.log('Dashboard: Showing DoctorDashboard for user:', user.role);
     return <DoctorDashboard />;
   }
 
-  // If user doesn't have a role, redirect to login to set one
-  console.log('Dashboard: No role found, redirecting to login. User:', user);
+  // If user doesn't have doctor role, redirect to login to set one
+  console.log('Dashboard: User does not have Doctor role, redirecting to login. User:', user);
   return <Navigate to="/login" replace />;
 };
 
@@ -236,6 +221,13 @@ const AppContent: React.FC = () => {
             </DoctorProtectedRoute>
           }
         />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </Router>
+  );
+};
+
+/* 
         <Route
           path="/patient"
           element={
@@ -244,11 +236,7 @@ const AppContent: React.FC = () => {
             </PatientProtectedRoute>
           }
         />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </Router>
-  );
-};
+*/
 
 function App() {
   return (
@@ -258,6 +246,6 @@ function App() {
       </MessageProvider>
     </AuthProvider>
   );
-}
+};
 
 export default App;

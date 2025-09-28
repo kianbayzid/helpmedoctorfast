@@ -1,43 +1,36 @@
-import { apiClient } from './api';
-import { Patient, CreatePatientRequest, UpdatePatientRequest } from '../types';
+// PatientService - Removed (moved to .bak file)
+// This is a placeholder to prevent import errors
 
 class PatientService {
   private readonly basePath = '/patients';
 
-  async create(data: CreatePatientRequest): Promise<Patient> {
-    return await apiClient.post<Patient>(this.basePath, data);
+  // All methods removed - patient functionality disabled
+  async create(): Promise<never> {
+    throw new Error('Patient service disabled - Doctor portal only');
   }
 
-  async findAll(): Promise<Patient[]> {
-    return await apiClient.get<Patient[]>(this.basePath);
+  async findAll(): Promise<never[]> {
+    throw new Error('Patient service disabled - Doctor portal only');
   }
 
-  async findOne(id: number): Promise<Patient> {
-    return await apiClient.get<Patient>(`${this.basePath}/${id}`);
+  async findOne(): Promise<never> {
+    throw new Error('Patient service disabled - Doctor portal only');
   }
 
-  async update(id: number, changes: UpdatePatientRequest): Promise<Patient> {
-    return await apiClient.put<Patient>(`${this.basePath}/${id}`, changes);
+  async update(): Promise<never> {
+    throw new Error('Patient service disabled - Doctor portal only');
   }
 
-  async delete(id: number): Promise<{ id: number }> {
-    return await apiClient.delete<{ id: number }>(`${this.basePath}/${id}`);
+  async delete(): Promise<never> {
+    throw new Error('Patient service disabled - Doctor portal only');
   }
 
-  // Additional utility methods
-  async search(query: string): Promise<Patient[]> {
-    return await apiClient.get<Patient[]>(`${this.basePath}/search`, { q: query });
+  async search(): Promise<never[]> {
+    throw new Error('Patient service disabled - Doctor portal only');
   }
 
-  async findByPhone(phone: string): Promise<Patient | null> {
-    try {
-      return await apiClient.get<Patient>(`${this.basePath}/phone/${phone}`);
-    } catch (error: any) {
-      if (error.status === 404) {
-        return null;
-      }
-      throw error;
-    }
+  async findByPhone(): Promise<null> {
+    throw new Error('Patient service disabled - Doctor portal only');
   }
 }
 

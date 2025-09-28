@@ -3,7 +3,7 @@ import { User, Lock, AlertCircle, Mail, Calendar, Shield, Stethoscope } from 'lu
 import { useAuth } from '../../contexts/AuthContext';
 
 interface RegisterFormProps {
-  role: 'patient' | 'doctor';
+  role: 'doctor'; // Only doctor role supported now
   onBack: () => void;
   onSwitchToLogin: () => void;
 }
@@ -53,7 +53,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ role, onBack, onSwitchToLog
       name: formData.name,
       email: formData.email,
       password: formData.password,
-      role,
+      role: 'Doctor', // Always Doctor role now
       ...(formData.dateOfBirth && { dateOfBirth: formData.dateOfBirth }),
       ...(formData.insurance && { insurance: formData.insurance }),
       ...(formData.specialization && { specialization: formData.specialization })

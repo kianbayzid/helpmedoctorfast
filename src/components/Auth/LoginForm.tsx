@@ -3,7 +3,7 @@ import { User, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface LoginFormProps {
-  role: 'patient' | 'doctor';
+  role: 'doctor'; // Only doctor role supported now
   onBack: () => void;
   onSwitchToRegister: () => void;
 }
@@ -21,7 +21,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ role, onBack, onSwitchToRegister 
     setIsLoading(true);
 
     try {
-      await login(role);
+      await login('Doctor'); // Always Doctor role now
     } catch (error) {
       setError('Authentication failed. Please try again.');
       setIsLoading(false);

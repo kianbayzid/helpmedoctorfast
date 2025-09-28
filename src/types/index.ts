@@ -4,7 +4,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'Patient' | 'Doctor';
+  role: 'Doctor'; // Removed 'Patient' option
   dateOfBirth?: string;
   insurance?: string;
   specialization?: string;
@@ -52,7 +52,7 @@ export interface RegisterData {
   name: string;
   email: string;
   password: string;
-  role: 'Patient' | 'Doctor';
+  role: 'Doctor'; // Removed 'Patient' option
   dateOfBirth?: string;
   insurance?: string;
   specialization?: string;
@@ -84,7 +84,8 @@ export interface UpdateDoctorRequest {
   phone?: string;
 }
 
-// ===== Patient =====
+// ===== Patient ===== (Commented out - Patient portal removed)
+/*
 export interface Patient {
   id: number;
   name: string;
@@ -109,6 +110,7 @@ export interface UpdatePatientRequest {
   dateOfBirth?: string;
   insurance?: string;
 }
+*/
 
 // ===== Message =====
 export type MessageStatus = 'unread' | 'read' | 'responded';
