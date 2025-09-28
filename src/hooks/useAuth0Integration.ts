@@ -253,8 +253,6 @@ export const useAuth0Integration = () => {
         // Use 'select_account' to allow both login and signup
         prompt: 'select_account',
         state: JSON.stringify({ role }),
-        // Add role as a login hint for new users
-        login_hint: `role:${role}`,
         // Add custom parameter that can be accessed in Auth0 rules/actions
         ui_locales: `role_${role.toLowerCase()}`
       }
@@ -274,9 +272,11 @@ export const useAuth0Integration = () => {
     localStorage.setItem('pendingUserRole', JSON.stringify(roleData));
     sessionStorage.setItem('selectedRole', role);
 
+    console.log('Signup: Starting signup flow for role:', role);
+
     await loginWithRedirect({
       appState: {
-        returnTo: window.location.origin,
+        returnTo: role === 'Doctor' ? `${window.location.origin}/doctor` : `${window.location.origin}/patient`,
         role: role,
         isSignup: true
       },
@@ -284,7 +284,6 @@ export const useAuth0Integration = () => {
         // Force the signup screen
         prompt: 'signup',
         state: JSON.stringify({ role, isSignup: true }),
-        login_hint: `role:${role}`,
         ui_locales: `role_${role.toLowerCase()}`,
         // Additional parameters for signup
         screen_hint: 'signup'
