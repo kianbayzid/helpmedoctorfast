@@ -1,22 +1,15 @@
 import React, { useState } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Lock, Heart, Stethoscope, ArrowLeft } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const LoginPage: React.FC = () => {
-  const { loginWithRedirect, isLoading } = useAuth0();
-  const [selectedRole, setSelectedRole] = useState<'patient' | 'doctor' | null>(null);
+  const { isLoading: auth0Loading } = useAuth0();
+  const { login } = useAuth();
+  const [selectedRole, setSelectedRole] = useState<'Patient' | 'Doctor' | null>(null);
 
-  const handleLogin = async (role: 'patient' | 'doctor') => {
-    await loginWithRedirect({
-      appState: {
-        returnTo: window.location.origin,
-      },
-      authorizationParams: {
-        // Store role in app metadata during login
-        login_hint: `role:${role}`,
-        prompt: 'login'
-      }
-    });
+  const handleLogin = async (role: 'Patient' | 'Doctor') => {
+    await login(role);
   };
 
   const handleBackToSelection = () => {
@@ -38,14 +31,14 @@ const LoginPage: React.FC = () => {
 
             <div className="text-center">
               <div className="mx-auto h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                {selectedRole === 'doctor' ? (
+                {selectedRole === 'Doctor' ? (
                   <Stethoscope className="h-8 w-8 text-blue-600" />
                 ) : (
                   <Heart className="h-8 w-8 text-blue-600" />
                 )}
               </div>
               <h2 className="text-3xl font-bold text-gray-900">
-                {selectedRole === 'doctor' ? 'Doctor' : 'Patient'} Login
+                {selectedRole === 'Doctor' ? 'Doctor' : 'Patient'} Login
               </h2>
               <p className="mt-2 text-gray-600">
                 Secure authentication powered by Auth0
@@ -61,11 +54,11 @@ const LoginPage: React.FC = () => {
                 </p>
                 <button
                   onClick={() => handleLogin(selectedRole)}
-                  disabled={isLoading}
+                  disabled={auth0Loading}
                   className="group relative w-full flex justify-center items-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                 >
                   <Lock className="h-5 w-5 mr-2" />
-                  {isLoading ? 'Redirecting...' : 'Sign In with Auth0'}
+                  {auth0Loading ? 'Redirecting...' : 'Sign In with Auth0'}
                 </button>
               </div>
 
@@ -117,7 +110,7 @@ const LoginPage: React.FC = () => {
                 Access your medical information, communicate with doctors, and manage your healthcare.
               </p>
               <button
-                onClick={() => setSelectedRole('patient')}
+                onClick={() => setSelectedRole('Patient')}
                 className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium"
               >
                 Continue as Patient
@@ -136,7 +129,7 @@ const LoginPage: React.FC = () => {
                 Manage patient communications, review cases, and provide medical consultations.
               </p>
               <button
-                onClick={() => setSelectedRole('doctor')}
+                onClick={() => setSelectedRole('Doctor')}
                 className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium"
               >
                 Continue as Doctor

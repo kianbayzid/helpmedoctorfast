@@ -56,12 +56,24 @@ const AppContent: React.FC = () => {
   }
 
   if (error) {
+    console.error('Auth0 Error:', error);
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-lg">
           <p className="text-red-600 mb-4">Authentication error: {error.message}</p>
+          <details className="mb-4 text-left">
+            <summary className="cursor-pointer text-sm text-gray-600">Show Details</summary>
+            <pre className="text-xs mt-2 p-2 bg-gray-100 rounded overflow-auto">
+              {JSON.stringify(error, null, 2)}
+            </pre>
+          </details>
           <button
-            onClick={() => window.location.href = '/login'}
+            onClick={() => {
+              // Clear any stored auth state and redirect
+              sessionStorage.clear();
+              localStorage.clear();
+              window.location.href = '/login';
+            }}
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
           >
             Try Again
@@ -83,7 +95,9 @@ const AppContent: React.FC = () => {
             </ProtectedRoute>
           }
         />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/doctor" element={<DoctorDashboard />} />
+        <Route path="/patient" element={<PatientDashboard />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
   );
