@@ -28,11 +28,11 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
 
-  if (user?.role === 'patient') {
+  if (user?.role === 'Patient') {
     return <PatientDashboard />;
   }
 
-  if (user?.role === 'doctor') {
+  if (user?.role === 'Doctor') {
     return <DoctorDashboard />;
   }
 
