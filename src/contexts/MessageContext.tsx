@@ -37,6 +37,8 @@ const initialCategories: Category[] = [
   { id: '4', name: 'Lab Results', color: '#EF4444', doctorId: '1' }
 ];
 
+const initialMessages: Message[] = [];
+
 export const MessageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [categories, setCategories] = useState<Category[]>(initialCategories);
