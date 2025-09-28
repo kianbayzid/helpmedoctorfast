@@ -5,11 +5,16 @@ import { useAuth } from '../contexts/AuthContext';
 
 const LoginPage: React.FC = () => {
   const { isLoading: auth0Loading } = useAuth0();
-  const { login } = useAuth();
+  const { login, signup } = useAuth();
   const [selectedRole, setSelectedRole] = useState<'Patient' | 'Doctor' | null>(null);
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
 
-  const handleLogin = async (role: 'Patient' | 'Doctor') => {
-    await login(role);
+  const handleAuth = async (role: 'Patient' | 'Doctor', mode: 'login' | 'signup') => {
+    if (mode === 'signup') {
+      await signup(role);
+    } else {
+      await login(role);
+    }
   };
 
   const handleBackToSelection = () => {
@@ -38,7 +43,7 @@ const LoginPage: React.FC = () => {
                 )}
               </div>
               <h2 className="text-3xl font-bold text-gray-900">
-                {selectedRole === 'Doctor' ? 'Doctor' : 'Patient'} Login
+                {selectedRole === 'Doctor' ? 'Doctor' : 'Patient'} {authMode === 'signup' ? 'Sign Up' : 'Login'}
               </h2>
               <p className="mt-2 text-gray-600">
                 Secure authentication powered by Auth0
@@ -48,17 +53,49 @@ const LoginPage: React.FC = () => {
 
           <div className="bg-white py-8 px-6 shadow-lg rounded-lg">
             <div className="space-y-6">
+              {/* Auth Mode Toggle */}
+              <div className="text-center">
+                <div className="inline-flex rounded-lg border border-gray-300 p-1 bg-gray-50">
+                  <button
+                    onClick={() => setAuthMode('login')}
+                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                      authMode === 'login'
+                        ? 'bg-white text-blue-600 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    Login
+                  </button>
+                  <button
+                    onClick={() => setAuthMode('signup')}
+                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                      authMode === 'signup'
+                        ? 'bg-white text-blue-600 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    Sign Up
+                  </button>
+                </div>
+              </div>
+
               <div className="text-center">
                 <p className="text-sm text-gray-600 mb-4">
-                  Click below to securely sign in with Auth0
+                  {authMode === 'signup'
+                    ? 'Create your account with Auth0 (role will be assigned)'
+                    : 'Sign in to your existing account'
+                  }
                 </p>
                 <button
-                  onClick={() => handleLogin(selectedRole)}
+                  onClick={() => handleAuth(selectedRole, authMode)}
                   disabled={auth0Loading}
                   className="group relative w-full flex justify-center items-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                 >
                   <Lock className="h-5 w-5 mr-2" />
-                  {auth0Loading ? 'Redirecting...' : 'Sign In with Auth0'}
+                  {auth0Loading
+                    ? 'Redirecting...'
+                    : `${authMode === 'signup' ? 'Sign Up' : 'Sign In'} with Auth0`
+                  }
                 </button>
               </div>
 
