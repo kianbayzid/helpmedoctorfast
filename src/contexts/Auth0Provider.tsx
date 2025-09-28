@@ -7,8 +7,8 @@ interface Auth0ProviderWithHistoryProps {
 }
 
 const Auth0ProviderWithHistory: React.FC<Auth0ProviderWithHistoryProps> = ({ children }) => {
-  const domain = import.meta.env.VITE_AUTH0_DOMAIN || "YOUR_AUTH0_DOMAIN";
-  const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID || "YOUR_AUTH0_CLIENT_ID";
+  const domain = import.meta.env.VITE_AUTH0_DOMAIN || "dev-2guajhw0h3xdm6k6.us.auth0.com";
+  const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID || "IcZGMrrxXVsuJXoU0pxSCIqKGF1wAVLa";
   const audience = import.meta.env.VITE_AUTH0_AUDIENCE;
 
   return (
