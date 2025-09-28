@@ -19,8 +19,12 @@ export const useAuth0Integration = () => {
   // API call helper with auth token
   const makeAuthenticatedRequest = useCallback(async (url: string, options: RequestInit = {}) => {
     try {
-      const token = await getAccessTokenSilently();
-      
+      console.log('Attempting to get access token...');
+      const token = await getAccessTokenSilently({
+        ignoreCache: false
+      });
+      console.log('Got access token:', token ? 'Token received' : 'No token');
+
       const response = await fetch(url, {
         ...options,
         headers: {
@@ -29,6 +33,8 @@ export const useAuth0Integration = () => {
           'Content-Type': 'application/json',
         },
       });
+
+      console.log('API Response status:', response.status);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -53,31 +59,45 @@ export const useAuth0Integration = () => {
       const userData = await makeAuthenticatedRequest('/api/user/profile');
       return userData;
     } catch (error) {
-      console.error('Failed to fetch user profile:', error);
-      
-      // If backend doesn't have the user, create/sync from Auth0 data
-      try {
-        const syncedUser = await syncUserWithBackend();
-        return syncedUser;
-      } catch (syncError) {
-        console.error('Failed to sync user:', syncError);
-        setError('Failed to load user profile');
-        return null;
-      }
+      console.warn('Backend API not available, using Auth0 data directly:', error);
+
+      // If backend is not available, use Auth0 data directly
+      const roleFromState = sessionStorage.getItem('selectedRole');
+      const roleFromAuth0 = auth0User['https://helpmedoctorfast.com/role'] as 'Patient' | 'Doctor';
+      const selectedRole = roleFromAuth0 || roleFromState as 'Patient' | 'Doctor' || 'Patient';
+
+      const fallbackUser: User = {
+        id: auth0User.sub || '',
+        name: auth0User.name || auth0User.email || '',
+        email: auth0User.email || '',
+        role: selectedRole,
+        dateOfBirth: auth0User['https://helpmedoctorfast.com/dateOfBirth'],
+        insurance: auth0User['https://helpmedoctorfast.com/insurance'],
+        specialization: auth0User['https://helpmedoctorfast.com/specialization']
+      };
+
+      // Clear the stored role after use
+      sessionStorage.removeItem('selectedRole');
+      return fallbackUser;
     } finally {
       setUserLoading(false);
     }
-  }, [isAuthenticated, auth0User?.sub, makeAuthenticatedRequest]);
+  }, [isAuthenticated, auth0User, makeAuthenticatedRequest]);
 
   // Sync Auth0 user data with your backend
   const syncUserWithBackend = useCallback(async () => {
     if (!auth0User) return null;
 
+    // Check for role from multiple sources
+    const roleFromState = sessionStorage.getItem('selectedRole');
+    const roleFromAuth0 = auth0User['https://helpmedoctorfast.com/role'] as 'Patient' | 'Doctor';
+    const selectedRole = roleFromAuth0 || roleFromState as 'Patient' | 'Doctor' || 'Patient';
+
     const userPayload = {
       auth0Id: auth0User.sub,
       name: auth0User.name || auth0User.email || '',
       email: auth0User.email || '',
-      role: (auth0User['https://helpmedoctorfast.com/role'] as 'Patient' | 'Doctor') || 'Patient',
+      role: selectedRole,
       dateOfBirth: auth0User['https://helpmedoctorfast.com/dateOfBirth'],
       insurance: auth0User['https://helpmedoctorfast.com/insurance'],
       specialization: auth0User['https://helpmedoctorfast.com/specialization']
@@ -120,31 +140,56 @@ export const useAuth0Integration = () => {
 
   // Load user data when authenticated
   useEffect(() => {
+    console.log('useAuth0Integration - Auth state changed:', {
+      isAuthenticated,
+      isLoading,
+      hasAuth0User: !!auth0User,
+      userSub: auth0User?.sub
+    });
+
     if (isAuthenticated && auth0User && !isLoading) {
+      console.log('Auth0 user data:', auth0User);
       fetchUserProfile().then((userData) => {
+        console.log('Fetched user profile:', userData);
         if (userData) {
           setUser(userData);
         } else {
           // Fallback to Auth0 data if backend fails
+          // Check for role in app metadata, state, or default to Patient
+          const roleFromState = sessionStorage.getItem('selectedRole');
+          const roleFromAuth0 = auth0User['https://helpmedoctorfast.com/role'] as 'Patient' | 'Doctor';
+          const fallbackRole = roleFromAuth0 || roleFromState as 'Patient' | 'Doctor' || 'Patient';
+
+          console.log('Using fallback user with role:', fallbackRole);
           const fallbackUser: User = {
             id: auth0User.sub || '',
             name: auth0User.name || auth0User.email || '',
             email: auth0User.email || '',
-            role: (auth0User['https://helpmedoctorfast.com/role'] as 'Patient' | 'Doctor') || 'Patient',
+            role: fallbackRole,
             dateOfBirth: auth0User['https://helpmedoctorfast.com/dateOfBirth'],
             insurance: auth0User['https://helpmedoctorfast.com/insurance'],
             specialization: auth0User['https://helpmedoctorfast.com/specialization']
           };
           setUser(fallbackUser);
+
+          // Clear the stored role after use
+          sessionStorage.removeItem('selectedRole');
         }
+      }).catch((error) => {
+        console.error('Error in fetchUserProfile:', error);
+        setError('Failed to load user profile');
       });
     } else if (!isAuthenticated) {
+      console.log('User not authenticated, clearing user state');
       setUser(null);
       setError(null);
     }
   }, [isAuthenticated, auth0User, isLoading, fetchUserProfile]);
 
   const login = async (role: 'Patient' | 'Doctor') => {
+    // Store the role selection temporarily
+    sessionStorage.setItem('selectedRole', role);
+
     await loginWithRedirect({
       appState: {
         returnTo: window.location.origin,
@@ -169,7 +214,7 @@ export const useAuth0Integration = () => {
 
   return {
     user,
-    isAuthenticated: isAuthenticated && !isLoading,
+    isAuthenticated: isAuthenticated && !isLoading && user !== null,
     isLoading: isLoading || userLoading,
     error,
     login,
