@@ -1,133 +1,84 @@
 // src/services/api.ts
 
-const API_BASE_URL = process.env.VITE_API_URL || 'http://localhost:3000/api';
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
-// Helper function for API calls
-async function apiCall(endpoint: string, options: RequestInit = {}) {
-  const token = localStorage.getItem('authToken');
-  
-  const config: RequestInit = {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers,
-    },
-  };
+const API_BASE_URL =
+  (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_API_URL) ||
+  'http://localhost:3000/api';
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-  
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Request failed' }));
-    throw new Error(error.message || `HTTP error! status: ${response.status}`);
+function buildUrl(endpoint: string, params?: Record<string, any>) {
+  const url = new URL(endpoint, API_BASE_URL);
+  if (params && typeof params === 'object') {
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) url.searchParams.append(k, String(v));
+    });
   }
-  
-  return response.json();
+  return url.toString();
 }
 
-// Authentication APIs
-export const authAPI = {
-  login: async (email: string, password: string, role: 'Patient' | 'Doctor') => {
-    const response = await apiCall('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password, role }),
-    });
-    
-    // Store token if provided
-    if (response.token) {
-      localStorage.setItem('authToken', response.token);
-    }
-    
-    return response;
-  },
+async function request<T>(
+  endpoint: string,
+  {
+    method = 'GET',
+    body,
+    params,
+    headers = {},
+  }: {
+    method?: HttpMethod;
+    body?: any;
+    params?: Record<string, any>;
+    headers?: Record<string, string>;
+  } = {}
+): Promise<T> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
 
-  register: async (userData: {
-    name: string;
-    email: string;
-    password: string;
-    role: 'Patient' | 'Doctor';
-    dateOfBirth?: string;
-    insurance?: string;
-    specialization?: string;
-  }) => {
-    const response = await apiCall('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify(userData),
-    });
-    
-    // Store token if provided
-    if (response.token) {
-      localStorage.setItem('authToken', response.token);
-    }
-    
-    return response;
-  },
+  // Only set Content-Type for non-FormData JSON requests
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+  const defaultHeaders: Record<string, string> = {};
+  if (!isFormData) defaultHeaders['Content-Type'] = 'application/json';
+  if (token) defaultHeaders['Authorization'] = `Bearer ${token}`;
 
-  logout: async () => {
-    localStorage.removeItem('authToken');
-    // Optionally call backend logout endpoint
-    try {
-      await apiCall('/auth/logout', { method: 'POST' });
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  },
+  const resp = await fetch(buildUrl(endpoint, params), {
+    method,
+    headers: { ...defaultHeaders, ...headers },
+    body: body == null || method === 'GET' ? undefined : isFormData ? body : JSON.stringify(body),
+    credentials: 'include', // optional; remove if not using cookies
+  });
 
-  getCurrentUser: async () => {
-    return apiCall('/auth/me');
-  },
-};
+  // Handle 204/empty responses
+  if (resp.status === 204) return undefined as unknown as T;
 
-// Message APIs
-export const messageAPI = {
-  getMessages: async () => {
-    return apiCall('/messages');
-  },
+  const text = await resp.text();
+  let data: any = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    // non-JSON response
+    data = text;
+  }
 
-  sendMessage: async (message: {
-    receiverId: string;
-    content: string;
-    category?: string;
-    patientDetails?: {
-      name: string;
-      dateOfBirth: string;
-      insurance?: string;
-      urgency: 'low' | 'medium' | 'high';
-    };
-  }) => {
-    return apiCall('/messages', {
-      method: 'POST',
-      body: JSON.stringify(message),
-    });
-  },
+  if (!resp.ok) {
+    const message =
+      (data && (data.message || data.error || data.msg)) ||
+      `HTTP ${resp.status} ${resp.statusText}`;
+    const err: any = new Error(message);
+    err.status = resp.status;
+    err.data = data;
+    throw err;
+  }
 
-  markAsRead: async (messageId: string) => {
-    return apiCall(`/messages/${messageId}/read`, {
-      method: 'PUT',
-    });
-  },
+  return data as T;
+}
 
-  getThreads: async () => {
-    return apiCall('/messages/threads');
-  },
-};
-
-// Category APIs
-export const categoryAPI = {
-  getCategories: async () => {
-    return apiCall('/categories');
-  },
-
-  addCategory: async (name: string, color: string) => {
-    return apiCall('/categories', {
-      method: 'POST',
-      body: JSON.stringify({ name, color }),
-    });
-  },
-
-  removeCategory: async (categoryId: string) => {
-    return apiCall(`/categories/${categoryId}`, {
-      method: 'DELETE',
-    });
-  },
+export const apiClient = {
+  get: <T>(endpoint: string, params?: Record<string, any>) =>
+    request<T>(endpoint, { method: 'GET', params }),
+  post: <T>(endpoint: string, body?: any, params?: Record<string, any>) =>
+    request<T>(endpoint, { method: 'POST', body, params }),
+  put: <T>(endpoint: string, body?: any, params?: Record<string, any>) =>
+    request<T>(endpoint, { method: 'PUT', body, params }),
+  patch: <T>(endpoint: string, body?: any, params?: Record<string, any>) =>
+    request<T>(endpoint, { method: 'PATCH', body, params }),
+  delete: <T>(endpoint: string, params?: Record<string, any>) =>
+    request<T>(endpoint, { method: 'DELETE', params }),
 };
