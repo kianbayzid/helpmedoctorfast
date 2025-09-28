@@ -330,9 +330,19 @@ export const useAuth0Integration = () => {
     return false;
   }, [user]);
 
+  // Debug the authentication state
+  console.log('useAuth0Integration - final state:', {
+    auth0IsAuthenticated: isAuthenticated,
+    auth0IsLoading: isLoading,
+    userIsLoading: userLoading,
+    hasUser: !!user,
+    finalIsAuthenticated: isAuthenticated && !isLoading,
+    finalIsLoading: isLoading || userLoading
+  });
+
   return {
     user,
-    isAuthenticated: isAuthenticated && !isLoading && user !== null,
+    isAuthenticated: isAuthenticated && !isLoading, // Remove user !== null requirement
     isLoading: isLoading || userLoading,
     error,
     login,

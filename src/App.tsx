@@ -27,10 +27,19 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 };
 
 const DoctorProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isLoading, hasRolePermission } = useAuth();
+  const { isAuthenticated, isLoading, hasRolePermission, user } = useAuth();
   const { isLoading: auth0Loading } = useAuth0();
 
+  console.log('DoctorProtectedRoute: State check', {
+    isLoading,
+    auth0Loading,
+    isAuthenticated,
+    hasUser: !!user,
+    userRole: user?.role
+  });
+
   if (isLoading || auth0Loading) {
+    console.log('DoctorProtectedRoute: Still loading...');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
@@ -42,21 +51,53 @@ const DoctorProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childre
   }
 
   if (!isAuthenticated) {
+    console.log('DoctorProtectedRoute: Not authenticated, redirecting to login');
     return <Navigate to="/login" replace />;
   }
 
-  if (!hasRolePermission('Doctor')) {
-    return <Navigate to="/doctor" replace />;
+  // Wait for user data to load
+  if (!user) {
+    console.log('DoctorProtectedRoute: No user data yet, showing loading...');
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading user data...</p>
+        </div>
+      </div>
+    );
   }
 
+  const hasDoctorPermission = hasRolePermission('Doctor');
+  console.log('DoctorProtectedRoute: Permission check', {
+    userRole: user?.role,
+    hasDoctorPermission,
+    user: user
+  });
+
+  if (!hasDoctorPermission) {
+    console.log('DoctorProtectedRoute: No doctor permission, redirecting to login');
+    return <Navigate to="/login" replace />;
+  }
+
+  console.log('DoctorProtectedRoute: Access granted, showing DoctorDashboard');
   return <>{children}</>;
 };
 
 const PatientProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isLoading, hasRolePermission } = useAuth();
+  const { isAuthenticated, isLoading, hasRolePermission, user } = useAuth();
   const { isLoading: auth0Loading } = useAuth0();
 
+  console.log('PatientProtectedRoute: State check', {
+    isLoading,
+    auth0Loading,
+    isAuthenticated,
+    hasUser: !!user,
+    userRole: user?.role
+  });
+
   if (isLoading || auth0Loading) {
+    console.log('PatientProtectedRoute: Still loading...');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
@@ -68,19 +109,49 @@ const PatientProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
   }
 
   if (!isAuthenticated) {
+    console.log('PatientProtectedRoute: Not authenticated, redirecting to login');
     return <Navigate to="/login" replace />;
   }
 
-  if (!hasRolePermission('Patient')) {
-    return <Navigate to="/patient" replace />;
+  // Wait for user data to load
+  if (!user) {
+    console.log('PatientProtectedRoute: No user data yet, showing loading...');
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading user data...</p>
+        </div>
+      </div>
+    );
   }
 
+  const hasPatientPermission = hasRolePermission('Patient');
+  console.log('PatientProtectedRoute: Permission check', {
+    userRole: user?.role,
+    hasPatientPermission,
+    user: user
+  });
+
+  if (!hasPatientPermission) {
+    console.log('PatientProtectedRoute: No patient permission, redirecting to login');
+    return <Navigate to="/login" replace />;
+  }
+
+  console.log('PatientProtectedRoute: Access granted, showing PatientDashboard');
   return <>{children}</>;
 };
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
 
+  if (user?.role === 'Patient') {
+    return <PatientDashboard />;
+  }
+
+  if (user?.role === 'Doctor') {
+    return <DoctorDashboard />;
+  }
 
   // If user doesn't have a role, redirect to login to set one
   return <Navigate to="/login" replace />;
