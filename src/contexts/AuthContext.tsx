@@ -1,112 +1,75 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { User } from '../types';
+// src/contexts/AuthContext.tsx
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { doctorService } from "../services/doctorService";
 
-
-interface AuthContextType {
-  user: User | null;
-  login: (email: string, password: string, role: 'Patient' | 'Doctor') => Promise<boolean>;
-  register: (userData: RegisterData) => Promise<{ success: boolean; error?: string }>;
-  logout: () => void;
-  isAuthenticated: boolean;
-}
-
-interface RegisterData {
+interface Doctor {
+  idDoctor: number;
   name: string;
   email: string;
-  password: string;
-  role: 'Patient' | 'Doctor';
-  dateOfBirth?: string;
-  insurance?: string;
+  phone: string;
   specialization?: string;
+}
+
+interface AuthContextType {
+  user: Doctor | null;
+  login: (email: string, password: string) => Promise<boolean>;
+  register: (data: any) => Promise<{ success: boolean; error?: string }>;
+  logout: () => void;
+  isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };
 
-// Mock users data
-const mockUsers: User[] = [
-  {
-    id: '1',
-    name: 'Dr. Sarah Johnson',
-    email: 'sarah.johnson@medicalcenter.com',
-    role: 'Doctor',
-    specialization: 'General Practice'
-  },
-  {
-    id: '2',
-    name: 'John Smith',
-    email: 'john.smith@email.com',
-    role: 'Patient',
-    dateOfBirth: '1985-06-15',
-    insurance: 'Blue Cross Blue Shield'
-  },
-  {
-    id: '3',
-    name: 'Emily Davis',
-    email: 'emily.davis@email.com',
-    role: 'Patient',
-    dateOfBirth: '1992-03-22',
-    insurance: 'Aetna'
-  }
-];
-
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [user, setUser] = useState<Doctor | null>(null);
 
-  const login = async (email: string, password: string, role: 'Patient' | 'Doctor'): Promise<boolean> => {
-    // Mock authentication - in real app, this would be an API call
-    const foundUser = users.find(u => u.email === email && u.role === role);
-    if (foundUser) {
-      setUser(foundUser);
-      return true;
+  // cargar desde localStorage al iniciar
+  useEffect(() => {
+    const storedUser = localStorage.getItem("doctor");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
     }
+  }, []);
+
+  const login = async (email: string, password: string): Promise<boolean> => {
+  try {
+    const doctor = await doctorService.login({ email, password });
+
+    if (!doctor) return false;
+
+    setUser(doctor);
+    localStorage.setItem("doctor", JSON.stringify(doctor));
+    return true;
+  } catch (err) {
+    console.error("Login failed:", err);
     return false;
-  };
+  }
+};
 
-  const register = async (userData: RegisterData): Promise<{ success: boolean; error?: string }> => {
-    // Check if user already exists
-    const existingUser = users.find(u => u.email === userData.email);
-    if (existingUser) {
-      return { success: false, error: 'An account with this email already exists' };
+  const register = async (data: any): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const doctor = await doctorService.create(data);
+      setUser(doctor);
+      localStorage.setItem("doctor", JSON.stringify(doctor));
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message };
     }
-
-    // Validate required fields
-    if (!userData.name.trim() || !userData.email.trim() || !userData.password.trim()) {
-      return { success: false, error: 'Please fill in all required fields' };
-    }
-
-    // Create new user
-    const newUser: User = {
-      id: (users.length + 1).toString(),
-      name: userData.name,
-      email: userData.email,
-      role: userData.role,
-      ...(userData.dateOfBirth && { dateOfBirth: userData.dateOfBirth }),
-      ...(userData.insurance && { insurance: userData.insurance }),
-      ...(userData.specialization && { specialization: userData.specialization })
-    };
-
-    setUsers(prev => [...prev, newUser]);
-    setUser(newUser);
-    return { success: true };
   };
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem("doctor");
   };
 
-  const isAuthenticated = user !== null;
-
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isAuthenticated }}>
+    <AuthContext.Provider value={{ user, login, register, logout, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );

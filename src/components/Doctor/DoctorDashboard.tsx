@@ -1,73 +1,92 @@
-import React, { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { useMessages } from '../../contexts/MessageContext';
-import Header from '../Layout/Header';
-import CategoryTabs from './CategoryTabs';
-import PatientList from './PatientList';
-import MessageThread from './MessageThread';
+import React, { useEffect, useState } from "react";
+import { AlertCircle, Phone, FileText } from "lucide-react";
+import { httpClient } from "../../services/httpClient";
+
+interface Message {
+  idMessage: number;
+  messageContent: string;
+  tldr: string | null;
+  messageType: string;
+  priority: string;
+  status: string;
+  createdAt: string;
+  patient?: {
+    idPatient: number;
+    name: string;
+  };
+}
 
 const DoctorDashboard: React.FC = () => {
-  const { user } = useAuth();
-  const { getThreadsForDoctor } = useMessages();
-  const [selectedCategory, setSelectedCategory] = useState('general');
-  const [selectedPatient, setSelectedPatient] = useState<string | null>(null);
+  const [doctor, setDoctor] = useState<any>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const threads = getThreadsForDoctor(user?.id || '');
-  const selectedThread = threads.find(t => t.patientId === selectedPatient);
+  useEffect(() => {
+    // Obtener el doctor logueado del localStorage
+    const storedDoctor = localStorage.getItem("doctor");
+    if (storedDoctor) {
+      const parsedDoctor = JSON.parse(storedDoctor);
+      setDoctor(parsedDoctor);
+
+      // Traer mensajes asociados al doctor
+      httpClient
+        .get(`/messages/doctor/${parsedDoctor.idDoctor}`)
+        .then((res) => setMessages(res))
+        .catch((err) => console.error("Error fetching messages:", err))
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  if (loading) return <p>Loading messages...</p>;
+
+  if (!doctor) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen text-gray-700">
+        <AlertCircle className="h-8 w-8 text-red-500 mb-2" />
+        <p>No doctor logged in.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header />
-      
-      <CategoryTabs 
-        selectedCategory={selectedCategory}
-        onCategorySelect={setSelectedCategory}
-      />
+    <div className="min-h-screen bg-gray-50 py-8 px-6">
+      <h1 className="text-2xl font-bold mb-6">Welcome, Dr. {doctor.name}</h1>
+      <p className="mb-4 text-gray-600">Here are your recent calls:</p>
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* Patient List Sidebar */}
-        <div className="w-80 bg-white border-r border-gray-200 overflow-y-auto">
-          <div className="p-4 bg-gray-50 border-b border-gray-200">
-            <h2 className="font-semibold text-gray-900 capitalize">
-              {selectedCategory} Messages
-            </h2>
-            <p className="text-sm text-gray-500">
-              {threads.filter(t => t.category === selectedCategory).length} conversations
-            </p>
-          </div>
-          
-          <PatientList
-            threads={threads}
-            selectedPatient={selectedPatient}
-            onPatientSelect={setSelectedPatient}
-            selectedCategory={selectedCategory}
-          />
-        </div>
+      {messages.length === 0 ? (
+        <p className="text-gray-500">No calls registered yet.</p>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {messages.map((msg) => (
+            <div
+              key={msg.idMessage}
+              className="bg-white shadow rounded-lg p-4 border border-gray-200"
+            >
+              <div className="flex items-center space-x-2 mb-2">
+                <Phone className="h-5 w-5 text-blue-500" />
+                <span className="text-sm text-gray-600">
+                  {new Date(msg.createdAt).toLocaleString()}
+                </span>
+              </div>
 
-        {/* Message Thread Area */}
-        <div className="flex-1 flex flex-col">
-          {selectedPatient && selectedThread ? (
-            <MessageThread
-              patientId={selectedThread.patientId}
-              patientName={selectedThread.patientName}
-            />
-          ) : (
-            <div className="flex-1 flex items-center justify-center bg-gray-50">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">💬</span>
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Select a patient to view conversation
-                </h3>
-                <p className="text-gray-500">
-                  Choose a patient from the sidebar to start or continue the conversation
-                </p>
+              <div className="mb-2 font-semibold text-lg text-gray-900">
+                {msg.tldr || "No summary available"}
+              </div>
+
+              <div className="mb-2 flex items-center space-x-2">
+                <FileText className="h-5 w-5 text-gray-500" />
+                <p className="text-sm text-gray-700">{msg.messageContent}</p>
+              </div>
+
+              <div className="mt-2 text-xs text-gray-400">
+                Status: {msg.status} | Priority: {msg.priority}
               </div>
             </div>
-          )}
+          ))}
         </div>
-      </div>
+      )}
     </div>
   );
 };

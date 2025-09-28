@@ -1,123 +1,52 @@
-import React from 'react';
-import { Users, Stethoscope, ArrowRight } from 'lucide-react';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Stethoscope, ArrowRight } from "lucide-react";
 
-interface PortalSelectionProps {
-  onSelectPortal: (portal: 'patient' | 'doctor') => void;
-}
+const PortalSelection: React.FC = () => {
+  const navigate = useNavigate();
 
-const PortalSelection: React.FC<PortalSelectionProps> = ({ onSelectPortal }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center mb-16">
-          <div className="flex justify-center mb-6">
-            <Stethoscope className="h-16 w-16 text-blue-600" />
-          </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            MedConnect Portal
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Secure communication platform connecting patients and healthcare providers. 
-            Choose your portal below to get started.
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {/* Patient Portal */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 border border-gray-100">
-            <div className="text-center">
-              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Users className="h-8 w-8 text-green-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Patient Portal
-              </h2>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                Access your health records, communicate with your healthcare team, 
-                and manage your medical information securely.
-              </p>
-              <ul className="text-left space-y-3 mb-8 text-gray-600">
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                  Send messages to your doctors
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                  View message history
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                  Secure patient information
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                  Priority messaging system
-                </li>
-              </ul>
-              <button
-                onClick={() => onSelectPortal('patient')}
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center"
-              >
-                Access Patient Portal
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </button>
-              <p className="text-center text-sm text-gray-500 mt-3">
-                New patient? You can create an account after selecting this portal.
-              </p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4">
+      <div className="w-full max-w-md">
+        {/* Main Card */}
+        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden transform hover:scale-105 transition-transform duration-300">
+          {/* Header Section */}
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 text-center">
+            <div className="mx-auto h-20 w-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4 shadow-lg">
+              <Stethoscope className="h-10 w-10 text-white" />
             </div>
+            <h1 className="text-2xl font-bold text-white mb-2">Doctor Portal</h1>
+            <div className="w-16 h-1 bg-white/30 rounded-full mx-auto"></div>
           </div>
 
-          {/* Doctor Portal */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 border border-gray-100">
-            <div className="text-center">
-              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Stethoscope className="h-8 w-8 text-blue-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Doctor Portal
-              </h2>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                Manage patient communications, organize messages by category, 
-                and streamline your healthcare workflow efficiently.
-              </p>
-              <ul className="text-left space-y-3 mb-8 text-gray-600">
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                  Categorize patient messages
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                  Thread-based conversations
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                  Custom workflow management
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                  Priority patient notifications
-                </li>
-              </ul>
-              <button
-                onClick={() => onSelectPortal('doctor')}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center"
-              >
-                Access Doctor Portal
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </button>
-              <p className="text-center text-sm text-gray-500 mt-3">
-                New doctor? You can create an account after selecting this portal.
-              </p>
+          {/* Content Section */}
+          <div className="px-8 py-8 text-center">
+            <p className="text-gray-600 leading-relaxed mb-8 text-base">
+              Manage patient communications, organize messages by category, and streamline your healthcare workflow efficiently.
+            </p>
+
+            {/* Action Button */}
+            <button
+              onClick={() => navigate("/login")}
+              className="group w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-6 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-3"
+            >
+              Access Doctor Portal
+              <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+            </button>
+
+            {/* Decorative Elements */}
+            <div className="flex justify-center gap-2 mt-6">
+              <div className="w-2 h-2 bg-blue-200 rounded-full"></div>
+              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+              <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
             </div>
           </div>
         </div>
 
-        <div className="text-center mt-16">
-          <div className="bg-white rounded-lg p-6 inline-block shadow-lg">
-            <p className="text-sm text-gray-600 mb-2">Need help accessing your portal?</p>
-            <p className="text-sm font-medium text-blue-600">Contact Support: (555) 123-4567</p>
-          </div>
-        </div>
+        {/* Footer Text */}
+        <p className="text-center text-gray-500 text-sm mt-6">
+          Secure • Efficient • Professional
+        </p>
       </div>
     </div>
   );
