@@ -15,7 +15,7 @@ const PortalSelection: React.FC = () => {
             <div className="mx-auto h-20 w-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4 shadow-lg">
               <Stethoscope className="h-10 w-10 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-white mb-2">Doctor Portal</h1>
+            <h1 className="text-2xl font-bold text-white mb-2">CareBridge</h1>
             <div className="w-16 h-1 bg-white/30 rounded-full mx-auto"></div>
           </div>
 
