@@ -2,7 +2,7 @@ import React from 'react';
 import { Users, Stethoscope, ArrowRight } from 'lucide-react';
 
 interface PortalSelectionProps {
-  onSelectPortal: (portal: 'patient' | 'doctor') => void;
+  onSelectPortal: (portal: 'Patient' | 'Doctor') => void;
 }
 
 const PortalSelection: React.FC<PortalSelectionProps> = ({ onSelectPortal }) => {
@@ -55,7 +55,7 @@ const PortalSelection: React.FC<PortalSelectionProps> = ({ onSelectPortal }) => 
                 </li>
               </ul>
               <button
-                onClick={() => onSelectPortal('patient')}
+                onClick={() => onSelectPortal('Patient')}
                 className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center"
               >
                 Access Patient Portal
@@ -99,7 +99,7 @@ const PortalSelection: React.FC<PortalSelectionProps> = ({ onSelectPortal }) => 
                 </li>
               </ul>
               <button
-                onClick={() => onSelectPortal('doctor')}
+                onClick={() => onSelectPortal('Doctor')}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center"
               >
                 Access Doctor Portal

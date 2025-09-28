@@ -3,7 +3,7 @@ import { User, Lock, AlertCircle, Mail, Calendar, Shield, Stethoscope } from 'lu
 import { useAuth } from '../../contexts/AuthContext';
 
 interface RegisterFormProps {
-  role: 'patient' | 'doctor';
+  role: 'Patient' | 'Doctor';
   onBack: () => void;
   onSwitchToLogin: () => void;
 }

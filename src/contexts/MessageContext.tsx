@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Message, Category, MessageThread } from '../types';
+import { UiMessage, Category, MessageThread } from '../types';
 
 function toDate(d: Date | string): Date {
   return d instanceof Date ? d : new Date(d);
@@ -10,14 +10,14 @@ function toStringDate(d: Date | string): string {
 }
 
 interface MessageContextType {
-  messages: Message[];
+  messages: UiMessage[];
   categories: Category[];
-  sendMessage: (message: Omit<Message, 'id' | 'timestamp' | 'read'>) => void;
+  sendMessage: (message: Omit<UiMessage, 'id' | 'timestamp' | 'read'>) => void;
   markAsRead: (messageId: string) => void;
   addCategory: (name: string, color: string, doctorId: string) => void;
   removeCategory: (categoryId: string) => void;
   getThreadsForDoctor: (doctorId: string) => MessageThread[];
-  getMessagesForPatient: (patientId: string) => Message[];
+  getMessagesForPatient: (patientId: string) => UiMessage[];
 }
 
 const MessageContext = createContext<MessageContextType | undefined>(undefined);
@@ -37,14 +37,14 @@ const initialCategories: Category[] = [
   { id: '4', name: 'Lab Results', color: '#EF4444', doctorId: '1' }
 ];
 
-const initialMessages: Message[] = [];
+const initialMessages: UiMessage[] = [];
 
 export const MessageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [messages, setMessages] = useState<UiMessage[]>(initialMessages);
   const [categories, setCategories] = useState<Category[]>(initialCategories);
 
-  const sendMessage = (messageData: Omit<Message, 'id' | 'timestamp' | 'read'>) => {
-    const newMessage: Message = {
+  const sendMessage = (messageData: Omit<UiMessage, 'id' | 'timestamp' | 'read'>) => {
+    const newMessage: UiMessage = {
       ...messageData,
       id: Date.now().toString(),
       timestamp: new Date(),
@@ -108,7 +108,7 @@ export const MessageProvider: React.FC<{ children: ReactNode }> = ({ children })
     );
   };
 
-  const getMessagesForPatient = (patientId: string): Message[] => {
+  const getMessagesForPatient = (patientId: string): UiMessage[] => {
     return messages.filter(msg => 
       msg.senderId === patientId || msg.receiverId === patientId
     ).sort((a, b) => toDate(a.timestamp).getTime() - toDate(b.timestamp).getTime());
