@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Lock, AlertCircle, Mail, Calendar, Shield, Stethoscope } from 'lucide-react';
+import { User, Lock, AlertCircle, Mail, Calendar, Shield, Stethoscope, Phone } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface RegisterFormProps {
@@ -11,6 +11,7 @@ interface RegisterFormProps {
 const RegisterForm: React.FC<RegisterFormProps> = ({ role, onBack, onSwitchToLogin }) => {
   const [formData, setFormData] = useState({
     name: '',
+    phone: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -124,6 +125,27 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ role, onBack, onSwitchToLog
                   placeholder="Enter your full name"
                 />
                 <User className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" />
+              </div>
+            </div>
+
+            {/* Phone */}
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                Phone Number *
+              </label>
+              <div className="mt-1 relative">
+                <input
+                  id="phone"
+                  name="phone"
+                  type="phone"
+                  autoComplete="phone"
+                  required
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter your phone number"
+                />
+                <Phone className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" />
               </div>
             </div>
 
